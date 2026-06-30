@@ -1788,7 +1788,7 @@ function startElementQuiz(){
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
   document.getElementById('screen-element').style.display='block';
-  elQueue=[...Array(QDB.element_number.length).keys()];
+  elQueue=shuffle([...Array(QDB.element_number.length).keys()]);
   elIdx=0; elScore=0; elWrongIdxs=[];
   elBuild();
 }
@@ -1879,7 +1879,7 @@ function elNext(){
 function elRestart(){
   document.getElementById('screen-element-finish').style.display='none';
   document.getElementById('screen-element').style.display='block';
-  elQueue=[...Array(QDB.element_number.length).keys()];
+  elQueue=shuffle([...Array(QDB.element_number.length).keys()]);
   elIdx=0; elScore=0; elWrongIdxs=[];
   elBuild();
 }
