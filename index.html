@@ -172,11 +172,45 @@
   .choice-label.label-B{background:#378ADD;color:#fff;border-color:#2872B8;}
   .choice-label.label-C{background:#E0B940;color:#fff;border-color:#C99B1F;}
   .choice-label.label-D{background:#5B9A3A;color:#fff;border-color:#477A2C;}
-  .choice-btn.correct{background:var(--green-bg)!important;border-color:var(--green-border)!important;}
-  .choice-btn.wrong{background:var(--red-bg)!important;border-color:var(--red-border)!important;}
-  .choice-btn.reveal-correct{background:var(--green-bg)!important;border-color:var(--green-border)!important;}
-  .choice-btn.correct .choice-label,.choice-btn.reveal-correct .choice-label{background:var(--green)!important;color:#fff!important;border-color:var(--green)!important;}
-  .choice-btn.wrong .choice-label{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important;}
+  .choice-btn.correct{background:#CDEAB0!important;border:3px solid #3E8914!important;box-shadow:0 0 0 2px rgba(62,137,20,0.25)!important;}
+  .choice-btn.wrong{background:#F8C1C0!important;border:3px solid #C62828!important;box-shadow:0 0 0 2px rgba(198,40,40,0.25)!important;}
+  .choice-btn.reveal-correct{background:#CDEAB0!important;border:3px solid #3E8914!important;box-shadow:0 0 0 2px rgba(62,137,20,0.25)!important;}
+  .choice-btn.correct .choice-label,.choice-btn.reveal-correct .choice-label{background:#3E8914!important;color:#fff!important;border-color:#3E8914!important;}
+  .choice-btn.wrong .choice-label{background:#C62828!important;color:#fff!important;border-color:#C62828!important;}
+
+  #quiz-random-toggle.active {
+    background:#E6F1FB;
+    border-color:#378ADD;
+    color:#185FA5;
+    font-weight:500;
+  }
+
+  #screen-element{display:none;}
+  #screen-element-finish{display:none;}
+  .el-question-card{
+    background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);
+    padding:28px 20px;margin-bottom:18px;text-align:center;
+  }
+  .el-question-text{font-size:18px;font-weight:600;margin-bottom:4px;}
+  .el-display{
+    font-size:36px;font-weight:700;letter-spacing:2px;
+    background:var(--surface2);border:0.5px solid var(--border2);border-radius:var(--radius);
+    padding:14px;margin:16px auto;max-width:200px;min-height:54px;
+    display:flex;align-items:center;justify-content:center;color:var(--text);
+  }
+  .el-display.el-correct{background:#CDEAB0;border:3px solid #3E8914;color:#1F4D0A;}
+  .el-display.el-wrong{background:#F8C1C0;border:3px solid #C62828;color:#5A0000;}
+  .el-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:260px;margin:0 auto;}
+  .el-key{
+    padding:16px 0;font-size:20px;font-weight:600;border-radius:var(--radius);
+    border:0.5px solid var(--border2);background:var(--surface);color:var(--text);
+    cursor:pointer;font-family:inherit;transition:background .12s;
+  }
+  .el-key:hover{background:var(--surface2);}
+  .el-key.el-clear{color:var(--red-text);}
+  .el-key.el-enter{background:var(--blue);color:#fff;border-color:var(--blue-dark);grid-column:span 2;}
+  .el-key.el-enter:hover{background:var(--blue-dark);}
+  .el-key:disabled{opacity:0.4;cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -226,6 +260,7 @@
       <button class="subject-btn" onclick="startQuiz('chemistry_a')">化学基礎A（イオン・周期表）<span class="sub-count">33問</span></button>
       <button class="subject-btn" onclick="startQuiz('chemistry_b')">化学基礎B（化学結合・イオン結晶）<span class="sub-count">30問</span></button>
       <button class="subject-btn" onclick="startQuiz('chemistry_c')">化学基礎C（共有結合・電子式）<span class="sub-count">30問</span></button>
+      <button class="subject-btn" onclick="startElementQuiz()">元素番号（原子番号1〜20）<span class="sub-count">20問</span></button>
       <button class="subject-btn" onclick="startQuiz('chiri')">地理総合<span class="sub-count">30問</span></button>
     </div>
   </div>
@@ -234,6 +269,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
       <span class="tag" id="subject-tag"></span>
       <div style="display:flex;gap:8px;align-items:center;">
+        <button id="quiz-random-toggle" class="active" onclick="toggleQuizRandom()" style="font-size:12px;padding:5px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;">🔀 ランダム: ON</button>
         <button id="adv-toggle" onclick="toggleAdvanced()">🔶 アドバンス: OFF</button>
         <button id="adv-reveal-all" onclick="revealAllChoices()" style="display:none;font-size:12px;padding:5px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;">👁 すべて表示</button>
         <span class="progress" id="progress-text"></span>
@@ -380,6 +416,40 @@
       </div>
       <div id="ss-retry-wrong-btn" style="display:none;margin-top:10px;">
         <button class="btn-primary" style="background:#F5A623;border-color:#E8950F;" onclick="ssRetryWrong()">✗ 間違えた問題をやり直す</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-element">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h1 style="font-size:18px;font-weight:600;">元素番号（原子番号1〜20）</h1>
+      <button class="btn-secondary" onclick="goSelectFromElement()">← 戻る</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+      <span style="font-size:13px;color:var(--text2);" id="el-prog"></span>
+      <span style="font-size:13px;color:var(--text2);" id="el-score"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="el-pfill" style="width:0%"></div></div>
+    <div class="el-question-card">
+      <div class="el-question-text" id="el-question"></div>
+      <div class="el-display" id="el-display">_</div>
+    </div>
+    <div class="el-keypad" id="el-keypad"></div>
+    <div id="el-result" style="margin-top:14px;"></div>
+    <div id="el-next" style="display:none;margin-top:12px;text-align:center;">
+      <button class="btn-primary" onclick="elNext()">次へ →</button>
+    </div>
+  </div>
+  <div id="screen-element-finish">
+    <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:40px 24px;text-align:center;">
+      <div style="font-size:52px;font-weight:700;color:var(--blue);line-height:1;margin-bottom:8px;" id="elf-rate">--</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:24px;" id="elf-sub"></div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="elRestart()">もう一度</button>
+        <button class="btn-secondary" onclick="goSelectFromElement()">教科選択に戻る</button>
+      </div>
+      <div id="el-retry-wrong-btn" style="display:none;margin-top:10px;">
+        <button class="btn-primary" style="background:#F5A623;border-color:#E8950F;" onclick="elRetryWrong()">✗ 間違えた問題をやり直す</button>
       </div>
     </div>
   </div>
@@ -945,10 +1015,32 @@ const QDB = {
     {q:"分子式・電子式・構造式・組成式などをまとめて何というか？",a:"化学式",w:["分子式","組成式","構造式"]},
     {q:"水分子H₂Oの電子式における共有電子対の数は？",a:"2組",w:["1組","3組","4組"]},
     {q:"水分子H₂Oの電子式における非共有電子対の数は？",a:"2組",w:["0組","1組","3組"]},
+  ],
+  element_number: [
+    {q:"水素（H）の原子番号は？",a:"1",w:["2","3","4"]},
+    {q:"ヘリウム（He）の原子番号は？",a:"2",w:["1","3","10"]},
+    {q:"リチウム（Li）の原子番号は？",a:"3",w:["2","4","11"]},
+    {q:"ベリリウム（Be）の原子番号は？",a:"4",w:["3","5","12"]},
+    {q:"ホウ素（B）の原子番号は？",a:"5",w:["4","6","13"]},
+    {q:"炭素（C）の原子番号は？",a:"6",w:["5","7","14"]},
+    {q:"窒素（N）の原子番号は？",a:"7",w:["6","8","15"]},
+    {q:"酸素（O）の原子番号は？",a:"8",w:["7","9","16"]},
+    {q:"フッ素（F）の原子番号は？",a:"9",w:["8","10","17"]},
+    {q:"ネオン（Ne）の原子番号は？",a:"10",w:["9","11","18"]},
+    {q:"ナトリウム（Na）の原子番号は？",a:"11",w:["10","12","19"]},
+    {q:"マグネシウム（Mg）の原子番号は？",a:"12",w:["11","13","20"]},
+    {q:"アルミニウム（Al）の原子番号は？",a:"13",w:["12","14","5"]},
+    {q:"ケイ素（Si）の原子番号は？",a:"14",w:["13","15","6"]},
+    {q:"リン（P）の原子番号は？",a:"15",w:["14","16","7"]},
+    {q:"硫黄（S）の原子番号は？",a:"16",w:["15","17","8"]},
+    {q:"塩素（Cl）の原子番号は？",a:"17",w:["16","18","9"]},
+    {q:"アルゴン（Ar）の原子番号は？",a:"18",w:["17","19","10"]},
+    {q:"カリウム（K）の原子番号は？",a:"19",w:["18","20","11"]},
+    {q:"カルシウム（Ca）の原子番号は？",a:"20",w:["19","21","12"]},
   ]
 };
 
-const LABELS = {civics:'公民',chemistry:'化学基礎',biology:'生物分野',flame:'炎色反応',classification:'物質の分類',statechange:'状態変化・熱運動',atom:'原子の構成',electron:'電子配置・イオン',periodic:'周期表',separation:'分離法',eng_sentence:'英語：文の種類',eng_pattern:'英語：基本文型',eng_fill:'英語：穴埋め',japan_constitution_fill:'公民：日本国憲法穴埋め',kogo:'古文：ちごのそら寝',kogo_grammar:'古文：古典文法・仮名遣い',ikiru:'国語A：生きるということ',akushu:'国語A：握手',rekishi_sogo1:'歴史総合①',rekishi_sogo2:'歴史総合②',chiri:'地理総合',sistan:'シス単',chemistry_a:'化学基礎A（イオン・周期表）',chemistry_b:'化学基礎B（化学結合・イオン結晶）',chemistry_c:'化学基礎C（共有結合・電子式）',rekishi_sogo3:'歴史総合③',rekishi_sogo4:'歴史総合④',all:'全教科'};
+const LABELS = {civics:'公民',chemistry:'化学基礎',biology:'生物分野',flame:'炎色反応',classification:'物質の分類',statechange:'状態変化・熱運動',atom:'原子の構成',electron:'電子配置・イオン',periodic:'周期表',separation:'分離法',eng_sentence:'英語：文の種類',eng_pattern:'英語：基本文型',eng_fill:'英語：穴埋め',japan_constitution_fill:'公民：日本国憲法穴埋め',kogo:'古文：ちごのそら寝',kogo_grammar:'古文：古典文法・仮名遣い',ikiru:'国語A：生きるということ',akushu:'国語A：握手',rekishi_sogo1:'歴史総合①',rekishi_sogo2:'歴史総合②',chiri:'地理総合',sistan:'シス単',chemistry_a:'化学基礎A（イオン・周期表）',chemistry_b:'化学基礎B（化学結合・イオン結晶）',chemistry_c:'化学基礎C（共有結合・電子式）',element_number:'元素番号（原子番号1〜20）',rekishi_sogo3:'歴史総合③',rekishi_sogo4:'歴史総合④',all:'全教科'};
 let state = {subject:'',queue:[],idx:0,correct:0,wrong:0,answered:false};
 let wrongAnswers = [];
 
@@ -982,10 +1074,20 @@ function revealAllChoices(){
 
 function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 
+let quizRandom = true;
+
+function toggleQuizRandom(){
+  quizRandom = !quizRandom;
+  const btn = document.getElementById('quiz-random-toggle');
+  btn.textContent = '🔀 ランダム: ' + (quizRandom ? 'ON' : 'OFF');
+  btn.classList.toggle('active', quizRandom);
+}
+
 function startQuiz(s){
   state.subject=s;
   const pool=s==='all'?[...QDB.civics,...QDB.chemistry,...QDB.biology,...QDB.flame,...QDB.classification,...QDB.statechange,...QDB.atom,...QDB.electron,...QDB.periodic,...QDB.separation,...QDB.eng_sentence,...QDB.eng_pattern,...QDB.eng_fill,...QDB.japan_constitution_fill,...QDB.kogo,...QDB.kogo_grammar,...QDB.ikiru,...QDB.akushu,...QDB.rekishi_sogo1,...QDB.rekishi_sogo2,...QDB.rekishi_sogo3,...QDB.rekishi_sogo4,...QDB.chiri,...QDB.chemistry_a,...QDB.chemistry_b,...QDB.chemistry_c]:[...QDB[s]];
-  shuffle(pool);state.queue=pool;state.idx=0;state.correct=0;state.wrong=0;wrongAnswers=[];
+  if(quizRandom) shuffle(pool);
+  state.queue=pool;state.idx=0;state.correct=0;state.wrong=0;wrongAnswers=[];
   document.getElementById('screen-select').style.display='none';
   document.getElementById('screen-finish').style.display='none';
   document.getElementById('screen-quiz').style.display='block';
@@ -1116,7 +1218,7 @@ function goSelect(){
 
 const TERM_SUBJECTS = {
   term1: ['civics','chemistry','biology','flame','classification','statechange','atom','electron','periodic','separation','eng_sentence','eng_pattern','eng_fill','japan_constitution_fill','kogo','kogo_grammar','ikiru','akushu'],
-  term2: ['rekishi_sogo1','rekishi_sogo2','rekishi_sogo3','rekishi_sogo4','chiri','sistan','chemistry_a','chemistry_b','chemistry_c']
+  term2: ['rekishi_sogo1','rekishi_sogo2','rekishi_sogo3','rekishi_sogo4','chiri','sistan','chemistry_a','chemistry_b','chemistry_c','element_number']
 };
 
 function showList() {
@@ -1673,6 +1775,125 @@ function revealBlank(id, word){
     el.style.color='';
   }
 }
+
+// ════════════════════════════════
+//  元素番号 numeric keypad quiz
+// ════════════════════════════════
+let elIdx=0, elScore=0, elInput='', elAnswered=false, elQueue=[], elWrongIdxs=[];
+
+function startElementQuiz(){
+  ['screen-home','screen-select','screen-quiz','screen-finish','screen-list',
+   'screen-katsuyou','screen-katsuyou-finish','screen-sistan-finish','screen-sistan',
+   'screen-element-finish'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='none';
+  });
+  document.getElementById('screen-element').style.display='block';
+  elQueue=[...Array(QDB.element_number.length).keys()];
+  elIdx=0; elScore=0; elWrongIdxs=[];
+  elBuild();
+}
+
+function goSelectFromElement(){
+  ['screen-element','screen-element-finish'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='none';
+  });
+  document.getElementById('screen-select').style.display='block';
+}
+
+function elBuild(){
+  elAnswered=false; elInput='';
+  const q=QDB.element_number[elQueue[elIdx]];
+  const total=elQueue.length;
+  document.getElementById('el-prog').textContent=(elIdx+1)+' / '+total;
+  document.getElementById('el-pfill').style.width=((elIdx/total)*100)+'%';
+  document.getElementById('el-score').textContent='正解 '+elScore+' 問';
+  document.getElementById('el-question').textContent=q.q;
+  document.getElementById('el-result').innerHTML='';
+  document.getElementById('el-next').style.display='none';
+  const disp=document.getElementById('el-display');
+  disp.textContent='_'; disp.classList.remove('el-correct','el-wrong');
+
+  const keypad=document.getElementById('el-keypad');
+  keypad.innerHTML='';
+  const keys=['1','2','3','4','5','6','7','8','9','C','0','⏎'];
+  keys.forEach(k=>{
+    const btn=document.createElement('button');
+    btn.className='el-key'+(k==='C'?' el-clear':'')+(k==='⏎'?' el-enter':'');
+    btn.textContent=k;
+    btn.onclick=()=>elKeyPress(k);
+    keypad.appendChild(btn);
+  });
+}
+
+function elKeyPress(k){
+  if(elAnswered) return;
+  if(k==='C'){ elInput=''; }
+  else if(k==='⏎'){ elCheck(); return; }
+  else { if(elInput.length<2) elInput+=k; }
+  document.getElementById('el-display').textContent = elInput===''?'_':elInput;
+}
+
+function elCheck(){
+  if(elAnswered || elInput==='') return;
+  elAnswered=true;
+  const q=QDB.element_number[elQueue[elIdx]];
+  const correct = elInput === q.a;
+  const disp=document.getElementById('el-display');
+  document.querySelectorAll('.el-key').forEach(b=>b.disabled=true);
+  if(correct){
+    elScore++;
+    disp.classList.add('el-correct');
+    document.getElementById('el-result').innerHTML='<div class="result-msg ok">✓ 正解！</div>';
+  } else {
+    elWrongIdxs.push(elQueue[elIdx]);
+    disp.classList.add('el-wrong');
+    document.getElementById('el-result').innerHTML='<div class="result-msg ng">✗ 不正解　正解は '+q.a+'</div>';
+  }
+  document.getElementById('el-score').textContent='正解 '+elScore+' 問';
+  document.getElementById('el-next').style.display='block';
+}
+
+document.addEventListener('keydown', function(e){
+  const screen=document.getElementById('screen-element');
+  if(!screen || screen.style.display==='none') return;
+  if(e.key>='0'&&e.key<='9'){ e.preventDefault(); elKeyPress(e.key); }
+  else if(e.key==='Backspace'){ e.preventDefault(); elInput=''; document.getElementById('el-display').textContent='_'; }
+  else if(e.key==='Enter'){
+    e.preventDefault();
+    if(!elAnswered) elCheck();
+    else elNext();
+  }
+});
+
+function elNext(){
+  elIdx++;
+  if(elIdx>=elQueue.length){
+    document.getElementById('screen-element').style.display='none';
+    document.getElementById('screen-element-finish').style.display='block';
+    document.getElementById('elf-rate').textContent=Math.round(elScore/elQueue.length*100)+'%';
+    document.getElementById('elf-sub').textContent=elQueue.length+'問中 '+elScore+'問正解';
+    document.getElementById('el-retry-wrong-btn').style.display=elWrongIdxs.length>0?'block':'none';
+  } else { elBuild(); }
+}
+
+function elRestart(){
+  document.getElementById('screen-element-finish').style.display='none';
+  document.getElementById('screen-element').style.display='block';
+  elQueue=[...Array(QDB.element_number.length).keys()];
+  elIdx=0; elScore=0; elWrongIdxs=[];
+  elBuild();
+}
+
+function elRetryWrong(){
+  if(elWrongIdxs.length===0) return;
+  elQueue=[...elWrongIdxs];
+  elWrongIdxs=[];
+  elIdx=0; elScore=0;
+  document.getElementById('screen-element-finish').style.display='none';
+  document.getElementById('screen-element').style.display='block';
+  elBuild();
+}
+
 </script>
 </body>
 </html>
