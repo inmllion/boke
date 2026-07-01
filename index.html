@@ -1702,6 +1702,9 @@ function ssBuild(){
           if(i<inputs.length-1) inputs[i+1].focus();
           else ssCheck();
         }
+      } else if(e.key==='Backspace'&&inp.value===''&&i>0){
+        e.preventDefault();
+        inputs[i-1].focus();
       }
     });
   });
