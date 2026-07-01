@@ -1647,6 +1647,8 @@ let ssIdx=0,ssScore=0,ssChecked=false,ssQueue=[],ssRandom=false,ssWrongIdxs=[];
 function toggleSistanRandom(){
   ssRandom=!ssRandom;
   document.getElementById('ss-random-btn').textContent='🔀 ランダム: '+(ssRandom?'ON':'OFF');
+  ssQueue=ssRandom?ssShuffle([...Array(SISTAN.length).keys()]):[...Array(SISTAN.length).keys()];
+  ssIdx=0;ssScore=0;ssWrongIdxs=[];ssBuild();
 }
 
 function ssShuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -1695,6 +1697,7 @@ function ssBuild(){
   const inputs=document.querySelectorAll('.ss-input');
   inputs.forEach((inp,i)=>{
     inp.addEventListener('keydown',e=>{
+      if(e.isComposing||e.keyCode===229) return;
       if(e.key==='Enter'){
         e.preventDefault();
         e.stopPropagation();
@@ -1761,7 +1764,8 @@ function ssNext(){
 function ssRestart(){
   document.getElementById('screen-sistan-finish').style.display='none';
   document.getElementById('screen-sistan').style.display='block';
-  ssIdx=0;ssScore=0;ssBuild();
+  ssQueue=ssRandom?ssShuffle([...Array(SISTAN.length).keys()]):[...Array(SISTAN.length).keys()];
+  ssIdx=0;ssScore=0;ssWrongIdxs=[];ssBuild();
 }
 
 
